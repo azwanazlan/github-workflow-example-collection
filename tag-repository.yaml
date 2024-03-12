@@ -1,0 +1,30 @@
+on:
+  workflow_call:
+
+jobs:
+  Tag-repository:
+    runs-on:
+      - self-hosted
+      - Linux
+      - X64
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag Git Repository
+        shell: bash
+        run: |
+          #!/bin/bash
+          set -e
+
+          if [ -f ".git/shallow" ]; then
+            echo "repo is shallow copy, need to unshallow"
+            git fetch --unshallow
+          fi
+
+          version=${{ inputs.Version }}
+          echo "tagging revision $(git rev-parse --short HEAD) with version ${version}"
+          if [ $( git tag -l ${version} ) ]; then
+            echo "tag ${version} already exists"
+            exit 0
+          fi
+          git tag ${version}
+          git push --tags
