@@ -1,0 +1,24 @@
+name: #fill this 
+run-name: #fill this
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get latest release tag
+        id: latest-release-tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release view --json tagName --jq '.tagName')
+          echo "tag=$tag" >> $GITHUB_OUTPUT
+
+      - name: Create release tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" --verify-tag --title "${{ github.ref_name }}" --generate-notes --notes-start-tag "${{ steps.latest-release-tag.outputs.tag }}"
